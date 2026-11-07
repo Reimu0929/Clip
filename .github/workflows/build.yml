@@ -1,0 +1,25 @@
+name: build
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MinGW-w64
+        run: sudo apt-get update && sudo apt-get install -y g++-mingw-w64-i686-win32
+
+      - name: Build
+        run: |
+          mkdir -p out
+          for t in server client; do
+            i686-w64-mingw32-g++-win32 -O2 -std=c++11 \
+              -static -static-libgcc -static-libstdc++ \
+              $t.cpp -o out/clipsync-$t.exe -lws2_32
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clipsync
+          path: out/*.exe
